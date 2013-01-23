@@ -1,0 +1,353 @@
+class /OOP/CL_OAUTH_HEADER_PARSER definition
+  public
+  inheriting from /OOP/CL_OBJECT
+  final
+  create public .
+
+public section.
+*"* public components of class /OOP/CL_OAUTH_HEADER_PARSER
+*"* do not include other source files here!!!
+
+  constants OAUTH_CALLBACK type STRING value 'oauth_callback'. "#EC NOTEXT
+  constants OAUTH_CONSUMER_KEY type STRING value 'oauth_consumer_key'. "#EC NOTEXT
+  constants OAUTH_NONCE type STRING value 'oauth_nonce'. "#EC NOTEXT
+  constants OAUTH_SIGNATURE type STRING value 'oauth_signature'. "#EC NOTEXT
+  constants OAUTH_SIGNATURE_METHOD type STRING value 'oauth_signature_method'. "#EC NOTEXT
+  constants OAUTH_TIMESTAMP type STRING value 'oauth_timestamp'. "#EC NOTEXT
+  constants OAUTH_TOKEN type STRING value 'oauth_token'. "#EC NOTEXT
+  constants OAUTH_VERIFIER type STRING value 'oauth_verifier'. "#EC NOTEXT
+  constants OAUTH_VERSION type STRING value 'oauth_version'. "#EC NOTEXT
+  constants HMACSHA1 type STRING value 'HMAC-SHA1'. "#EC NOTEXT
+  constants V10 type STRING value '1.0'. "#EC NOTEXT
+
+  methods PARSE
+    importing
+      !OAUTH_HEADER type STRING
+    returning
+      value(RETURNING) type ref to /OOP/CL_OAUTH_PARAMETERS
+    raising
+      /OOP/CX_INVALID_OAUTH_HEADER .
+protected section.
+*"* protected components of class /OOP/CL_OAUTH_HEADER_PARSER
+*"* do not include other source files here!!!
+private section.
+*"* private components of class /OOP/CL_OAUTH_HEADER_PARSER
+*"* do not include other source files here!!!
+
+  methods _SET_PARAMETER
+    importing
+      !NAME type STRING
+      !VALUE type STRING
+      !PARAMETERS type ref to /OOP/CL_OAUTH_PARAMETERS
+    raising
+      /OOP/CX_INVALID_OAUTH_HEADER .
+  type-pools ABAP .
+  methods _VALIDATE_CALLBACK
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_CONSUMER_KEY
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_NONCE
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_SIGNATURE
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_SIGNATURE_METHOD
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_TIMESTAMP
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_TOKEN
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_VERIFIER
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+  methods _VALIDATE_VERSION
+    importing
+      !VALUE type STRING
+    returning
+      value(RETURNING) type ABAP_BOOL .
+ENDCLASS.
+
+
+
+CLASS /OOP/CL_OAUTH_HEADER_PARSER IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_HEADER_PARSER->PARSE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] OAUTH_HEADER                   TYPE        STRING
+* | [<-()] RETURNING                      TYPE REF TO /OOP/CL_OAUTH_PARAMETERS
+* | [!CX!] /OOP/CX_INVALID_OAUTH_HEADER
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method parse.
+  " Create OAuth parameters object
+  data parameters type ref to /oop/cl_oauth_parameters.
+  create object parameters.
+  " Parse the authorization header
+  data header type string.
+  header = oauth_header.
+  " Cut off the `OAuth ` part at the beginning of the authorization header
+  replace first occurrence of regex `(^OAuth )` in header with ``.
+  " Parameters are separated with a comma, split them into a list
+  data ta_authorization_parts type standard table of string.
+  split header at `,` into table ta_authorization_parts.
+  field-symbols <authorization_part> type string.
+  loop at ta_authorization_parts assigning <authorization_part>.
+    " Cut off any leading or trailing white-spaces
+    condense <authorization_part>.
+    " Name and value are separated with an equals sign, split them
+    data name type string.
+    data value type string.
+    split <authorization_part> at `=` into name value.
+    " Name and value may not be empty
+    if name is not initial and value is not initial.
+      " Values are surrounded by double quotes, cut them off
+      data value_length type i.
+      value_length = strlen( value ) - 2.
+      value = value+1(value_length).
+      clear value_length.
+      " Set the parameter on the parameters object
+      _set_parameter( name = name value = value parameters = parameters ).
+    endif.
+  endloop.
+  returning = parameters.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_SET_PARAMETER
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] NAME                           TYPE        STRING
+* | [--->] VALUE                          TYPE        STRING
+* | [--->] PARAMETERS                     TYPE REF TO /OOP/CL_OAUTH_PARAMETERS
+* | [!CX!] /OOP/CX_INVALID_OAUTH_HEADER
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _set_parameter.
+  " Set the parameter corresponding with the parameter name
+  case name.
+    when oauth_callback.
+      if _validate_callback( value ) = abap_true.
+        parameters->callback = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_consumer_key.
+      if _validate_consumer_key( value ) = abap_true.
+        parameters->consumer_key = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_nonce.
+      if _validate_nonce( value ) = abap_true.
+        parameters->nonce = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_signature.
+      if _validate_signature( value ) = abap_true.
+        parameters->signature = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_signature_method.
+      if _validate_signature_method( value ) = abap_true.
+        parameters->signature_method = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_timestamp.
+      if _validate_timestamp( value ) = abap_true.
+        parameters->timestamp = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_token.
+      if _validate_token( value ) = abap_true.
+        parameters->token = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_verifier.
+      if _validate_verifier( value ) = abap_true.
+        parameters->verifier = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when oauth_version.
+      if _validate_version( value ) = abap_true.
+        parameters->version = value.
+      else.
+        raise exception type /oop/cx_invalid_oauth_header.
+      endif.
+    when others.
+      " Unknown name; name must be a valid OAuth parameter name
+      raise exception type /oop/cx_invalid_oauth_header.
+  endcase.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_CALLBACK
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_callback.
+  data result type abap_bool value abap_true.
+  " Callback is not required, only validate when it was specified
+  if value is not initial.
+    if strlen( value ) > 2000.
+      result = abap_false.
+    endif.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_CONSUMER_KEY
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_consumer_key.
+  data result type abap_bool value abap_true.
+  if strlen( value ) > 6.
+    result = abap_false.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_NONCE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_nonce.
+  data result type abap_bool value abap_true.
+  if strlen( value ) > 64.
+    result = abap_false.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_SIGNATURE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_signature.
+  data result type abap_bool value abap_true.
+  if strlen( value ) > 28.
+    result = abap_false.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_SIGNATURE_METHOD
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_signature_method.
+  data result type abap_bool value abap_true.
+  if value <> hmacsha1.
+    result = abap_false.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_TIMESTAMP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_timestamp.
+  data result type abap_bool value abap_true.
+  if cl_abap_matcher=>matches( pattern = `[1-9]{1}[0-9]{9}` text = value ) = abap_false.
+    result = abap_false.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_TOKEN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_token.
+  data result type abap_bool value abap_true.
+  " Token is not required, only validate when it was specified
+  if value is not initial.
+    if strlen( value ) > 40.
+      result = abap_false.
+    endif.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_VERIFIER
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_verifier.
+  data result type abap_bool value abap_true.
+  " Verifier is not required, only validate when it was specified
+  if value is not initial.
+    if strlen( value ) > 6.
+      result = abap_false.
+    endif.
+  endif.
+  returning = result.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_HEADER_PARSER->_VALIDATE_VERSION
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] VALUE                          TYPE        STRING
+* | [<-()] RETURNING                      TYPE        ABAP_BOOL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _validate_version.
+  data result type abap_bool value abap_true.
+  if value <> v10.
+    result = abap_false.
+  endif.
+  returning = result.
+endmethod.
+ENDCLASS.

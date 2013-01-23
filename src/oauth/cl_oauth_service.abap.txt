@@ -1,0 +1,166 @@
+class /OOP/CL_OAUTH_SERVICE definition
+  public
+  inheriting from /OOP/CL_OBJECT
+  final
+  create public .
+
+public section.
+*"* public components of class /OOP/CL_OAUTH_SERVICE
+*"* do not include other source files here!!!
+
+  interfaces IF_HTTP_EXTENSION .
+protected section.
+*"* protected components of class /OOP/CL_OAUTH_SERVICE
+*"* do not include other source files here!!!
+private section.
+*"* private components of class /OOP/CL_OAUTH_SERVICE
+*"* do not include other source files here!!!
+
+  methods _INITIATE
+    importing
+      !REQUEST type ref to /OOP/IF_REQUEST
+      !RESPONSE type ref to /OOP/IF_RESPONSE .
+  methods _AUTHORIZE
+    importing
+      !REQUEST type ref to /OOP/IF_REQUEST
+      !RESPONSE type ref to /OOP/IF_RESPONSE .
+  methods _TOKEN
+    importing
+      !REQUEST type ref to /OOP/IF_REQUEST
+      !RESPONSE type ref to /OOP/IF_RESPONSE .
+  methods _OAUTH_PARAMETERS
+    importing
+      !REQUEST type ref to /OOP/IF_REQUEST
+    returning
+      value(RETURNING) type ref to /OOP/CL_OAUTH_PARAMETERS
+    raising
+      /OOP/CX_MISSING_OAUTH_HEADER
+      /OOP/CX_INVALID_OAUTH_HEADER .
+ENDCLASS.
+
+
+
+CLASS /OOP/CL_OAUTH_SERVICE IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_SERVICE->IF_HTTP_EXTENSION~HANDLE_REQUEST
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] SERVER                         TYPE REF TO IF_HTTP_SERVER
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method if_http_extension~handle_request.
+  " Wrap request and response
+  data request type ref to /oop/if_request.
+  data response type ref to /oop/if_response.
+  create object request
+    type
+    /oop/cl_request
+    exporting
+      request = server->request.
+  create object response
+    type
+    /oop/cl_response
+    exporting
+      response = server->response.
+  " Dispatch
+  data uri type string.
+  uri = request->get_requesturi( ).
+  case uri.
+    when `initiate`.
+      " Temporary Credentials
+      _initiate( request = request response = response ).
+      return.
+    when `authorize`.
+      " Resource Owner Authorization
+      _authorize( request = request response = response ).
+      return.
+    when `token`.
+      " Token Credentials
+      _token( request = request response = response ).
+      return.
+    when others.
+      response->send_not_found( ).
+      return.
+  endcase.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_SERVICE->_AUTHORIZE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] REQUEST                        TYPE REF TO /OOP/IF_REQUEST
+* | [--->] RESPONSE                       TYPE REF TO /OOP/IF_RESPONSE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _authorize.
+
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_SERVICE->_INITIATE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] REQUEST                        TYPE REF TO /OOP/IF_REQUEST
+* | [--->] RESPONSE                       TYPE REF TO /OOP/IF_RESPONSE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _initiate.
+  " Get the OAuth parameters
+  data oauth_parameters type ref to /oop/cl_oauth_parameters.
+  try.
+      oauth_parameters = _oauth_parameters( request ).
+    catch /oop/cx_missing_oauth_header.
+      response->send_bad_request( ).
+      return.
+    catch /oop/cx_invalid_oauth_header.
+      response->send_bad_request( ).
+      return.
+  endtry.
+
+*1. Check if client exists (`oauth_consumer_key` = `clients-id`)
+*2. Check if signature is valid (generate a signature with `clients-secret` only and check if it is equal to the received `oauth_signature` string)
+*3. Check if the request is unique (`temp_requests_initiate-nonce`)
+*4. Check if the timestamp is not too old (`temp_requests_initiate-timestamp`)
+*5. Save the request into `temp_requests_initiate`
+*6. Trigger cleanup for `temp_requests_initiate`
+*7. Generate `oauth_token` (base64 encoded CL_ABAP_RANDOM result)
+*8. Generate `oauth_token_secret` (base64 encoded CL_ABAP_RANDOM result)
+*9. Save the token and secret into `temp_tokens`
+*10. Return a proper Temporary Credentials response
+
+
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_SERVICE->_OAUTH_PARAMETERS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] REQUEST                        TYPE REF TO /OOP/IF_REQUEST
+* | [<-()] RETURNING                      TYPE REF TO /OOP/CL_OAUTH_PARAMETERS
+* | [!CX!] /OOP/CX_MISSING_OAUTH_HEADER
+* | [!CX!] /OOP/CX_INVALID_OAUTH_HEADER
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _oauth_parameters.
+  " Get authorization header
+  data oauth_header type string.
+  oauth_header = request->get_header( `Authorization` ).
+  if oauth_header is initial.
+    raise exception type /oop/cx_missing_oauth_header.
+  endif.
+
+  " Parse authorization header and return results
+  data oauth_header_parser type ref to /oop/cl_oauth_header_parser.
+  create object oauth_header_parser.
+  data oauth_parameters type ref to /oop/cl_oauth_parameters.
+  returning = oauth_header_parser->parse( oauth_header ).
+
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_SERVICE->_TOKEN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] REQUEST                        TYPE REF TO /OOP/IF_REQUEST
+* | [--->] RESPONSE                       TYPE REF TO /OOP/IF_RESPONSE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _token.
+endmethod.
+ENDCLASS.

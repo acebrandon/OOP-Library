@@ -1,0 +1,138 @@
+class /OOP/CL_OAUTH_UTIL definition
+  public
+  inheriting from /OOP/CL_OBJECT
+  final
+  create public .
+
+public section.
+*"* public components of class /OOP/CL_OAUTH_UTIL
+*"* do not include other source files here!!!
+
+  methods NEW_CLIENT_ID
+    returning
+      value(RETURNING) type /OOP/OA_CLIENT_ID .
+  methods NEW_CLIENT_SECRET
+    returning
+      value(RETURNING) type /OOP/OA_CLIENT_SECRET .
+  methods NEW_TOKEN
+    returning
+      value(RETURNING) type /OOP/OA_TOKEN .
+  methods NEW_TOKEN_SECRET
+    returning
+      value(RETURNING) type /OOP/OA_TOKEN_SECRET .
+  methods NEW_VERIFIER_CODE
+    returning
+      value(RETURNING) type /OOP/OA_VERIFIER_CODE .
+  methods UNIX_TIMESTAMP
+    returning
+      value(RETURNING) type I .
+protected section.
+*"* protected components of class /OOP/CL_OAUTH_UTIL
+*"* do not include other source files here!!!
+private section.
+*"* private components of class /OOP/CL_OAUTH_UTIL
+*"* do not include other source files here!!!
+
+  methods _RANDOM_STRING
+    importing
+      !LENGTH type I
+    returning
+      value(RETURNING) type STRING .
+ENDCLASS.
+
+
+
+CLASS /OOP/CL_OAUTH_UTIL IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_UTIL->NEW_CLIENT_ID
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        /OOP/OA_CLIENT_ID
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method NEW_CLIENT_ID.
+  returning = _random_string( length = 6 ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_UTIL->NEW_CLIENT_SECRET
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        /OOP/OA_CLIENT_SECRET
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method NEW_CLIENT_SECRET.
+  returning = _random_string( length = 40 ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_UTIL->NEW_TOKEN
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        /OOP/OA_TOKEN
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method NEW_TOKEN.
+  returning = _random_string( length = 40 ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_UTIL->NEW_TOKEN_SECRET
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        /OOP/OA_TOKEN_SECRET
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method NEW_TOKEN_SECRET.
+  returning = _random_string( length = 40 ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_UTIL->NEW_VERIFIER_CODE
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        /OOP/OA_VERIFIER_CODE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method NEW_VERIFIER_CODE.
+  returning = _random_string( length = 6 ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_OAUTH_UTIL->UNIX_TIMESTAMP
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        I
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method UNIX_TIMESTAMP.
+  get time.
+  data unix_epoch type d value '19700101'.
+  data ts type i.
+  ts = 86400 * ( sy-datum - unix_epoch ).
+  ts = ts + sy-uzeit(2) * 3600.
+  ts = ts + sy-uzeit+2(2) * 60.
+  ts = ts + sy-uzeit+4(2).
+  returning = ts.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Private Method /OOP/CL_OAUTH_UTIL->_RANDOM_STRING
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] LENGTH                         TYPE        I
+* | [<-()] RETURNING                      TYPE        STRING
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method _RANDOM_STRING.
+  data chars type string value `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`.
+
+  data seed type i.
+  seed = cl_abap_random=>seed( ).
+  data prng type ref to cl_abap_random.
+  prng = cl_abap_random=>create( seed = seed ).
+
+  data string type string.
+  do length times.
+    data rnd type i.
+    rnd = prng->intinrange( low = 0 high = 61 ).
+    concatenate string chars+rnd(1) into string.
+  enddo.
+
+  returning = string.
+endmethod.
+ENDCLASS.
