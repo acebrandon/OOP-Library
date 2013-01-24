@@ -22,8 +22,14 @@ public section.
     for /OOP/IF_REQUEST~GET_METHOD .
   aliases GET_PARAMETER
     for /OOP/IF_REQUEST~GET_PARAMETER .
+  aliases GET_RAW_MESSAGE
+    for /OOP/IF_REQUEST~GET_RAW_MESSAGE .
   aliases GET_REQUESTURI
     for /OOP/IF_REQUEST~GET_REQUESTURI .
+  aliases LIST_HEADERS
+    for /OOP/IF_REQUEST~LIST_HEADERS .
+  aliases LIST_PARAMETERS
+    for /OOP/IF_REQUEST~LIST_PARAMETERS .
 
   methods CONSTRUCTOR
     importing
@@ -130,6 +136,16 @@ endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_REQUEST->/OOP/IF_REQUEST~GET_RAW_MESSAGE
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        XSTRING
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_request~get_raw_message.
+  returning = me->request->get_raw_message( ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
 * | Instance Public Method /OOP/CL_REQUEST->/OOP/IF_REQUEST~GET_REQUESTURI
 * +-------------------------------------------------------------------------------------------------+
 * | [<-()] RETURNING                      TYPE        STRING
@@ -144,6 +160,32 @@ method /oop/if_request~get_requesturi.
 * HEAD /xyz?a=b HTTP/1.1               /xyz
 */
   returning = me->request->get_header_field( '~path_info' ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_REQUEST->/OOP/IF_REQUEST~LIST_HEADERS
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        TIHTTPNVP
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_request~list_headers.
+*/**
+* Returns all request headers
+*/
+  me->request->get_header_fields( changing fields = returning ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_REQUEST->/OOP/IF_REQUEST~LIST_PARAMETERS
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RETURNING                      TYPE        TIHTTPNVP
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_request~list_parameters.
+*/**
+* Returns all request parameters
+*/
+  me->request->get_form_fields_cs( changing fields = returning ).
 endmethod.
 
 

@@ -12,6 +12,12 @@ public section.
 
   aliases ADD_HEADER
     for /OOP/IF_RESPONSE~ADD_HEADER .
+  aliases DISABLE_COMPRESSION
+    for /OOP/IF_RESPONSE~DISABLE_COMPRESSION .
+  aliases EXPIRES_AFTER
+    for /OOP/IF_RESPONSE~EXPIRES_AFTER .
+  aliases EXPIRES_AT
+    for /OOP/IF_RESPONSE~EXPIRES_AT .
   aliases IS_COMMITTED
     for /OOP/IF_RESPONSE~IS_COMMITTED .
   aliases SEND_ACCEPTED
@@ -75,6 +81,36 @@ endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_RESPONSE->/OOP/IF_RESPONSE~DISABLE_COMPRESSION
+* +-------------------------------------------------------------------------------------------------+
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_response~disable_compression.
+  me->response->set_compression( me->response->co_compress_none ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_RESPONSE->/OOP/IF_RESPONSE~EXPIRES_AFTER
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] SECONDS                        TYPE        I
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_response~expires_after.
+  me->response->server_cache_expire_rel( seconds ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_RESPONSE->/OOP/IF_RESPONSE~EXPIRES_AT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] DATE                           TYPE        D
+* | [--->] TIME                           TYPE        T
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_response~expires_at.
+  me->response->server_cache_expire_abs( expires_abs_date = date expires_abs_time = time ).
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
 * | Instance Public Method /OOP/CL_RESPONSE->/OOP/IF_RESPONSE~IS_COMMITTED
 * +-------------------------------------------------------------------------------------------------+
 * | [<-()] RETURNING                      TYPE        ABAP_BOOL
@@ -84,6 +120,23 @@ method /oop/if_response~is_committed.
 * Returns a boolean indicating if the response has been committed.
 */
   returning = me->committed.
+endmethod.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method /OOP/CL_RESPONSE->/OOP/IF_RESPONSE~REDIRECT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] URL                            TYPE        STRING
+* | [--->] PERMANENTLY                    TYPE        I (default =0)
+* | [--->] EXPLANATION                    TYPE        STRING (default ='')
+* | [--->] PROTOCOL_DEPENDENT             TYPE        I (default =0)
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+method /oop/if_response~redirect.
+  if me->is_committed( ) = abap_true.
+    raise exception type /oop/cx_response_committed.
+  endif.
+  me->response->redirect( url = url permanently = permanently explanation = explanation protocol_dependent = protocol_dependent ).
+  me->commit( ).
 endmethod.
 
 
@@ -285,5 +338,7 @@ endmethod.
 method constructor.
   super->constructor( ).
   me->response = response.
+  " Enable full compression by default
+  me->response->set_compression( me->response->co_compress_in_all_cases ).
 endmethod.
 ENDCLASS.

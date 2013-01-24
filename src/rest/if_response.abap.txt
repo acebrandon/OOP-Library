@@ -7,10 +7,24 @@ interface /OOP/IF_RESPONSE
     importing
       !NAME type STRING
       !VALUE type STRING .
+  methods DISABLE_COMPRESSION .
+  methods EXPIRES_AFTER
+    importing
+      !SECONDS type I .
+  methods EXPIRES_AT
+    importing
+      !DATE type D
+      !TIME type T .
   type-pools ABAP .
   methods IS_COMMITTED
     returning
       value(RETURNING) type ABAP_BOOL .
+  methods REDIRECT
+    importing
+      !URL type STRING
+      !PERMANENTLY type I default 0
+      !EXPLANATION type STRING default ''
+      !PROTOCOL_DEPENDENT type I default 0 .
   methods SEND_ACCEPTED
     importing
       !LOCATION type STRING optional .

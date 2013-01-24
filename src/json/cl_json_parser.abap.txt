@@ -545,11 +545,62 @@ endmethod.
 * +--------------------------------------------------------------------------------------</SIGNATURE>
 method json_string_to_string.
   data value type string.
-  " Escape backslashes and double quotes
+  value = json_string->value.
+
+  " Escape characters according to json spec
+
+  " - Backslashes first so the backslashes added by the other escapes won't be double-escaped
   replace all occurrences of '\' in value with '\\'.
+  " - Double quote
   replace all occurrences of '"' in value with '\"'.
+  " - Slash
+  replace all occurrences of '/' in value with '\/'.
+
+  " Convert the value to UTF-8 bytes, so we can easily find and replace characters which must be escaped
+  data converter_out type ref to cl_abap_conv_out_ce.
+  converter_out = cl_abap_conv_out_ce=>create( encoding = `UTF-8` ).
+  data value_x type xstring.
+  converter_out->convert( exporting data = value importing buffer = value_x ).
+
+  " - Backspace
+  data backspace_x type x length 1 value `08`.
+  data escaped_backspace type string value `\b`.
+  data escaped_backspace_x type xstring.
+  converter_out->convert( exporting data = escaped_backspace importing buffer = escaped_backspace_x ).
+  replace all occurrences of backspace_x in value_x with escaped_backspace_x in byte mode.
+  " - Formfeed
+  data formfeed_x type x length 1 value `0C`.
+  data escaped_formfeed type string value `\f`.
+  data escaped_formfeed_x type xstring.
+  converter_out->convert( exporting data = escaped_formfeed importing buffer = escaped_formfeed_x ).
+  replace all occurrences of formfeed_x in value_x with escaped_formfeed_x in byte mode.
+  " - Newline
+  data newline_x type x length 1 value `0A`.
+  data escaped_newline type string value `\n`.
+  data escaped_newline_x type xstring.
+  converter_out->convert( exporting data = escaped_newline importing buffer = escaped_newline_x ).
+  replace all occurrences of newline_x in value_x with escaped_newline_x in byte mode.
+  " - Carriage return
+  data carriagereturn_x type x length 1 value `0D`.
+  data escaped_carriagereturn type string value `\r`.
+  data escaped_carriagereturn_x type xstring.
+  converter_out->convert( exporting data = escaped_carriagereturn importing buffer = escaped_carriagereturn_x ).
+  replace all occurrences of carriagereturn_x in value_x with escaped_carriagereturn_x in byte mode.
+  " - Horizontal tab
+  data horizontaltab_x type x length 1 value `09`.
+  data escaped_horizontaltab type string value `\t`.
+  data escaped_horizontaltab_x type xstring.
+  converter_out->convert( exporting data = escaped_horizontaltab importing buffer = escaped_horizontaltab_x ).
+  replace all occurrences of horizontaltab_x in value_x with escaped_horizontaltab_x in byte mode.
+
+  " Convert the value back to a UTF-8 string
+  data converter_in type ref to cl_abap_conv_in_ce.
+  converter_in = cl_abap_conv_in_ce=>create( encoding = `UTF-8` ).
+  converter_in->convert( exporting input = value_x importing data = value ).
+
   " Surround value with double quotes
-  concatenate `"` json_string->value `"` into value.
+  concatenate `"` value `"` into value.
+
   returning = value.
 endmethod.
 

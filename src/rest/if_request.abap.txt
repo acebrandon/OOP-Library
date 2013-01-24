@@ -25,7 +25,16 @@ interface /OOP/IF_REQUEST
       !NAME type STRING
     returning
       value(RETURNING) type STRING .
+  methods GET_RAW_MESSAGE
+    returning
+      value(RETURNING) type XSTRING .
   methods GET_REQUESTURI
     returning
       value(RETURNING) type STRING .
+  methods LIST_HEADERS
+    returning
+      value(RETURNING) type TIHTTPNVP .
+  methods LIST_PARAMETERS
+    returning
+      value(RETURNING) type TIHTTPNVP .
 endinterface.

@@ -8,7 +8,6 @@ public section.
 *"* public components of class /OOP/CL_BITWISE
 *"* do not include other source files here!!!
 
-  class-methods CLASS_CONSTRUCTOR .
   class-methods LEFT_SHIFT_X
     importing
       !VALUE type RAW4
@@ -98,8 +97,7 @@ private section.
     H_7FFFFFFF type X length 4 value '7FFFFFFF'. "#EC NOTEXT
   constants:
     H_80000000 type X length 4 value '80000000'. "#EC NOTEXT
-  class-data:
-    POWER_OF_2 type STANDARD TABLE OF I .
+  constants MIN_INT type I value -2147483648. "#EC NOTEXT
 ENDCLASS.
 
 
@@ -152,44 +150,6 @@ endmethod.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
-* | Static Public Method /OOP/CL_BITWISE=>CLASS_CONSTRUCTOR
-* +-------------------------------------------------------------------------------------------------+
-* +--------------------------------------------------------------------------------------</SIGNATURE>
-method class_constructor.
-  append 2 to power_of_2.
-  append 4 to power_of_2.
-  append 8 to power_of_2.
-  append 16 to power_of_2.
-  append 32 to power_of_2.
-  append 64 to power_of_2.
-  append 128 to power_of_2.
-  append 256 to power_of_2.
-  append 512 to power_of_2.
-  append 1024 to power_of_2.
-  append 2048 to power_of_2.
-  append 4096 to power_of_2.
-  append 8192 to power_of_2.
-  append 16384 to power_of_2.
-  append 32768 to power_of_2.
-  append 65536 to power_of_2.
-  append 131072 to power_of_2.
-  append 262144 to power_of_2.
-  append 524288 to power_of_2.
-  append 1048576 to power_of_2.
-  append 2097152 to power_of_2.
-  append 4194304 to power_of_2.
-  append 8388608 to power_of_2.
-  append 16777216 to power_of_2.
-  append 33554432 to power_of_2.
-  append 67108864 to power_of_2.
-  append 134217728 to power_of_2.
-  append 268435456 to power_of_2.
-  append 536870912 to power_of_2.
-  append 1073741824 to power_of_2.
-endmethod.
-
-
-* <SIGNATURE>---------------------------------------------------------------------------------------+
 * | Static Public Method /OOP/CL_BITWISE=>LEFT_SHIFT_I
 * +-------------------------------------------------------------------------------------------------+
 * | [--->] VALUE                          TYPE        I
@@ -225,9 +185,7 @@ method left_shift_x.
     data result type x length 4.
     try.
         " First try regular multiplication
-        data a type i.
-        read table power_of_2 into a index positions_to_shift.
-        result = value * a.
+        result = value * ( 2 ** positions_to_shift ).
       catch cx_sy_arithmetic_overflow.
         " Overflow occured, perform bitwise multiplication
         data calc_value type x length 4.
@@ -342,9 +300,7 @@ method right_shift_x.
       return.
     endif.
   elseif positions_to_shift > 0.
-    data a type i.
-    read table power_of_2 into a index positions_to_shift.
-    returning = value div a.
+    returning = value div ( 2 ** positions_to_shift ).
     return.
   else.
     returning = value.
@@ -385,7 +341,7 @@ method subtract_x.
       " Overflow occured, perform bitwise subtraction
       " a - b is the same as a + (-1 * b)
       data b_negated type x length 4.
-      if b = -2147483648.
+      if b = min_int.
         b_negated = b.
       else.
         b_negated = b * -1.

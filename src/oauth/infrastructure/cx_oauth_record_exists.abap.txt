@@ -1,14 +1,14 @@
-class /OOP/CX_MISSING_OAUTH_HEADER definition
+class /OOP/CX_OAUTH_RECORD_EXISTS definition
   public
   inheriting from /OOP/CX_STATICEXCEPTION
   final
   create public .
 
 public section.
-*"* public components of class /OOP/CX_MISSING_OAUTH_HEADER
+*"* public components of class /OOP/CX_OAUTH_RECORD_EXISTS
 *"* do not include other source files here!!!
 
-  constants /OOP/CX_MISSING_OAUTH_HEADER type SOTR_CONC value '001560AB31521EE29291E7271C19F972'. "#EC NOTEXT
+  constants /OOP/CX_OAUTH_RECORD_EXISTS type SOTR_CONC value '001560AB31521EE292BEC2D848853972'. "#EC NOTEXT
 
   methods CONSTRUCTOR
     importing
@@ -16,20 +16,20 @@ public section.
       !PREVIOUS like PREVIOUS optional
       !MESSAGE type STRING optional .
 protected section.
-*"* protected components of class /OOP/CX_MISSING_OAUTH_HEADER
+*"* protected components of class /OOP/CX_OAUTH_RECORD_EXISTS
 *"* do not include other source files here!!!
 private section.
-*"* private components of class /OOP/CX_MISSING_OAUTH_HEADER
+*"* private components of class /OOP/CX_OAUTH_RECORD_EXISTS
 *"* do not include other source files here!!!
 ENDCLASS.
 
 
 
-CLASS /OOP/CX_MISSING_OAUTH_HEADER IMPLEMENTATION.
+CLASS /OOP/CX_OAUTH_RECORD_EXISTS IMPLEMENTATION.
 
 
 * <SIGNATURE>---------------------------------------------------------------------------------------+
-* | Instance Public Method /OOP/CX_MISSING_OAUTH_HEADER->CONSTRUCTOR
+* | Instance Public Method /OOP/CX_OAUTH_RECORD_EXISTS->CONSTRUCTOR
 * +-------------------------------------------------------------------------------------------------+
 * | [--->] TEXTID                         LIKE        TEXTID(optional)
 * | [--->] PREVIOUS                       LIKE        PREVIOUS(optional)
@@ -43,7 +43,7 @@ PREVIOUS = PREVIOUS
 MESSAGE = MESSAGE
 .
  IF textid IS INITIAL.
-   me->textid = /OOP/CX_MISSING_OAUTH_HEADER .
+   me->textid = /OOP/CX_OAUTH_RECORD_EXISTS .
  ENDIF.
 endmethod.
 ENDCLASS.
