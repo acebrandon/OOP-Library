@@ -140,7 +140,11 @@ method _parse_line.
             if char = _textindicator.
               text_ended = abap_true.
             else.
-              concatenate csvvalue char into csvvalue.
+              if char is initial. " Space
+                concatenate csvvalue ` ` into csvvalue.
+              else.
+                concatenate csvvalue char into csvvalue.
+              endif.
             endif.
           else.
             " Reached the end of the line while inside a text value
@@ -162,7 +166,11 @@ method _parse_line.
               message = msg.
         endif.
       else.
-        concatenate csvvalue char into csvvalue.
+        if char is initial. " Space
+          concatenate csvvalue ` ` into csvvalue.
+        else.
+          concatenate csvvalue char into csvvalue.
+        endif.
       endif.
     else.
       append csvvalue to csvvalues.
