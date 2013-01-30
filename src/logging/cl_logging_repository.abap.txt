@@ -45,14 +45,7 @@ method /oop/if_logging_repository~create.
   data tp_log_handle type balloghndl.
   wa_log_header-object = log_object.
   wa_log_header-subobject = log_subobject.
-  "Set exire date on 2 months
-  call function 'BKK_ADD_MONTH_TO_DATE'
-    exporting
-      months  = 2
-      olddate = sy-datum
-    importing
-      newdate = wa_log_header-aldate_del.
-
+  wa_log_header-aldate_del = sy-datum + 60. " Expire after 2 months
   wa_log_header-del_before = abap_true.
 
   concatenate sy-uname '_' sy-datum '_' sy-uzeit into wa_log_header-extnumber.

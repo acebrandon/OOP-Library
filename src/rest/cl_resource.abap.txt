@@ -4,7 +4,7 @@ class /OOP/CL_RESOURCE definition
   abstract
   create public
 
-  global friends /OOP/CL_DISPATCHER .
+  global friends /OOP/IF_DISPATCHER .
 
 public section.
 *"* public components of class /OOP/CL_RESOURCE
